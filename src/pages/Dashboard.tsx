@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { dataService } from '../services/dataService';
-import { StudyRoom, Quiz } from '../types';
+import { StudyRoom, Quiz, UserProfile, Note } from '../types';
 import { motion } from 'motion/react';
 import { 
   Zap, 
@@ -11,16 +11,15 @@ import {
   ArrowUpRight,
   TrendingUp,
   Award,
-  BookOpen,
+  MessageSquare,
+  Send,
   Trophy,
-  BrainCircuit,
-  FileText,
-  Users,
-  Search
+  FileText
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
+import { Input } from '../components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { 
   AreaChart,
@@ -38,6 +37,9 @@ export function Dashboard() {
   const [chartData, setChartData] = useState<{ day: string, hours: number }[]>([]);
   const [rooms, setRooms] = useState<StudyRoom[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [topUsers, setTopUsers] = useState<UserProfile[]>([]);
+  const [recentNotes, setRecentNotes] = useState<Note[]>([]);
+  const [quickAsk, setQuickAsk] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -46,10 +48,12 @@ export function Dashboard() {
   }, [user]);
 
   const loadDashboardData = async () => {
-    const [sessions, activeRooms, allQuizzes] = await Promise.all([
+    const [sessions, activeRooms, allQuizzes, leaders, notes] = await Promise.all([
       dataService.getRecentFocusSessions(user!.uid),
       dataService.getActiveRooms(),
-      dataService.getQuizzes()
+      dataService.getQuizzes(),
+      dataService.getTopUsers(3),
+      dataService.getNotes(user!.uid)
     ]);
     
     setChartData(sessions.length > 0 ? sessions : [
@@ -63,12 +67,20 @@ export function Dashboard() {
     ]);
     setRooms(activeRooms.slice(0, 2));
     setQuizzes(allQuizzes.slice(0, 2));
+    setTopUsers(leaders);
+    setRecentNotes(notes.slice(0, 3));
+  };
+
+  const handleQuickAsk = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quickAsk.trim()) return;
+    navigate('/mentor', { state: { initialQuery: quickAsk } });
   };
 
   if (!user) return null;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8 pb-24">
+    <div className="p-6 max-w-7xl mx-auto space-y-8 pb-24 mt-16">
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black tracking-tight uppercase">Mission Control</h1>
@@ -117,7 +129,7 @@ export function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Chart area which now also includes quick links */}
+        {/* Main Chart area */}
         <div className="lg:col-span-2 space-y-8">
           <Card className="rounded-3xl overflow-hidden border-2 shadow-sm bg-card/80 backdrop-blur-sm">
             <CardHeader>
@@ -129,7 +141,7 @@ export function Dashboard() {
                 <AreaChart data={chartData}>
                   <defs>
                     <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
+                      <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.1}/>
                       <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
@@ -158,59 +170,52 @@ export function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Quick Access Hub */}
-          <div>
-             <h2 className="text-lg font-black uppercase tracking-tight mb-4 mt-6 border-b border-border/50 pb-2">System Modules</h2>
-             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                <QuickLinkCard 
-                  title="AI Mentor" 
-                  desc="Neural assistance" 
-                  icon={BrainCircuit} 
-                  path="/mentor" 
-                  onClick={() => navigate('/mentor')} 
-                  color="text-primary"
-                />
-                <QuickLinkCard 
-                  title="Quizzes" 
-                  desc="Knowledge checks" 
-                  icon={BookOpen} 
-                  path="/quizzes" 
-                  onClick={() => navigate('/quizzes')} 
-                  color="text-blue-500"
-                />
-                <QuickLinkCard 
-                  title="Study Rooms" 
-                  desc="Live sessions" 
-                  icon={Users} 
-                  path="/rooms" 
-                  onClick={() => navigate('/rooms')} 
-                  color="text-purple-500"
-                />
-                <QuickLinkCard 
-                  title="Data Archives" 
-                  desc="Saved notes" 
-                  icon={FileText} 
-                  path="/notes" 
-                  onClick={() => navigate('/notes')} 
-                  color="text-emerald-500"
-                />
-                <QuickLinkCard 
-                  title="Leaderboard" 
-                  desc="Global ranking" 
-                  icon={Trophy} 
-                  path="/leaderboard" 
-                  onClick={() => navigate('/leaderboard')} 
-                  color="text-amber-500"
-                />
-                <QuickLinkCard 
-                  title="Search Engine" 
-                  desc="Ecosystem query" 
-                  icon={Search} 
-                  path="/search" 
-                  onClick={() => navigate('/search')} 
-                  color="text-rose-500"
-                />
-             </div>
+          {/* Integrated Bento Grid for Features */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+             {/* Quick Ask Mentor */}
+             <Card className="rounded-3xl border-2 shadow-sm bg-card/80 backdrop-blur-sm">
+                <CardHeader className="pb-2">
+                   <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                      <MessageSquare className="w-4 h-4 text-primary" />
+                      Zenith AI
+                   </CardTitle>
+                </CardHeader>
+                <CardContent>
+                   <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mb-4">Neural assistance standing by.</p>
+                   <form onSubmit={handleQuickAsk} className="flex gap-2">
+                      <Input 
+                        value={quickAsk}
+                        onChange={(e) => setQuickAsk(e.target.value)}
+                        placeholder="Ask a quick question..." 
+                        className="rounded-xl h-12 text-sm bg-muted/50 border-2 border-muted"
+                      />
+                      <Button type="submit" size="icon" className="h-12 w-12 rounded-xl shrink-0">
+                         <Send className="w-4 h-4" />
+                      </Button>
+                   </form>
+                </CardContent>
+             </Card>
+
+             {/* Recent Notes */}
+             <Card className="rounded-3xl border-2 shadow-sm bg-card/80 backdrop-blur-sm">
+                <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+                   <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-emerald-500" />
+                      Recent Logs
+                   </CardTitle>
+                   <Button variant="ghost" size="sm" className="h-8 text-[10px] font-bold uppercase" onClick={() => navigate('/notes')}>View All</Button>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                   {recentNotes.length > 0 ? recentNotes.map(note => (
+                     <div key={note.id} onClick={() => navigate('/notes')} className="p-3 rounded-xl bg-muted/30 border hover:border-primary transition-colors cursor-pointer">
+                        <p className="text-xs font-bold truncate">{note.title}</p>
+                        <p className="text-[10px] text-muted-foreground truncate">{note.content.substring(0, 40)}...</p>
+                     </div>
+                   )) : (
+                     <p className="text-xs text-muted-foreground italic text-center py-4">No notes archived yet.</p>
+                   )}
+                </CardContent>
+             </Card>
           </div>
         </div>
 
@@ -230,6 +235,29 @@ export function Dashboard() {
             </CardContent>
           </Card>
 
+          {/* Leaderboard Panel */}
+          <Card className="rounded-3xl border-2 shadow-sm bg-card/80 backdrop-blur-sm">
+             <CardHeader className="pb-2 flex flex-row items-center justify-between space-y-0">
+                <CardTitle className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                   <Trophy className="w-4 h-4 text-amber-500" />
+                   Top Operators
+                </CardTitle>
+                <Button variant="ghost" size="sm" className="h-8 text-[10px] font-bold uppercase" onClick={() => navigate('/leaderboard')}>Ranks</Button>
+             </CardHeader>
+             <CardContent className="space-y-3">
+                {topUsers.map((u, i) => (
+                  <div key={u.uid} className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border">
+                     <div className="flex items-center gap-3">
+                        <span className="font-black italic text-muted-foreground/50">{i + 1}</span>
+                        <span className="text-sm font-bold truncate max-w-[100px]">{u.name}</span>
+                     </div>
+                     <Badge variant="secondary" className="text-[10px] font-black uppercase tracking-widest">{u.stats.xp} XP</Badge>
+                  </div>
+                ))}
+             </CardContent>
+          </Card>
+
+          {/* Active Vectors (Rooms & Quizzes) */}
           <Card className="rounded-3xl border-2 overflow-hidden shadow-sm bg-card/80 backdrop-blur-sm">
             <CardHeader className="pb-4 border-b bg-muted/20">
               <CardTitle className="text-sm font-black uppercase tracking-widest">Active Vectors</CardTitle>
@@ -260,7 +288,7 @@ function StatCard({ label, value, subtext, icon: Icon, trend }: { label: string,
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-3">
           <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">{label}</span>
-          <div className="w-8 h-8 rounded-xl bg-muted border flex items-center justify-center group-hover:bg-primary/20 group-hover:border-primary transition-colors shadow-inner">
+          <div className="w-8 h-8 rounded-xl bg-muted border flex items-center justify-center group-hover:bg-primary/10 group-hover:border-primary transition-colors">
             <Icon className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
           </div>
         </div>
@@ -269,28 +297,11 @@ function StatCard({ label, value, subtext, icon: Icon, trend }: { label: string,
           {subtext && <span className="text-xs text-muted-foreground font-black italic">{subtext}</span>}
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-primary/50 animate-pulse" />
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
           <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">{trend}</p>
         </div>
       </CardContent>
     </Card>
-  );
-}
-
-function QuickLinkCard({ title, desc, icon: Icon, onClick, color = "text-primary" }: { title: string, desc: string, icon: any, path: string, onClick: () => void, color?: string }) {
-  return (
-    <div 
-      onClick={onClick}
-      className="p-4 rounded-3xl border-2 bg-card/80 backdrop-blur-sm hover:border-primary hover:shadow-lg hover:shadow-primary/5 transition-all cursor-pointer group flex flex-col items-center text-center gap-3"
-    >
-      <div className={`w-12 h-12 rounded-2xl bg-muted border flex items-center justify-center ${color} group-hover:scale-110 transition-transform shadow-inner`}>
-         <Icon className="w-6 h-6" />
-      </div>
-      <div>
-         <h4 className="font-black uppercase text-xs tracking-tight mb-1">{title}</h4>
-         <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">{desc}</p>
-      </div>
-    </div>
   );
 }
 

@@ -6,7 +6,6 @@ import { auth, db } from './lib/firebase';
 import { useAppStore } from './store/useAppStore';
 import { UserProfile } from './types';
 import { Navbar } from './components/Navbar';
-import { Sidebar } from './components/Sidebar';
 import { Toaster } from './components/ui/sonner';
 
 // Lazy load pages for performance
@@ -80,8 +79,7 @@ export default function App() {
     <BrowserRouter>
       <div className="min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
         <Navbar />
-        {user && <Sidebar />}
-        <main className={user ? "lg:pl-64 pt-16" : "pt-16"}>
+        <main className="pt-16 w-full max-w-screen-2xl mx-auto">
           <Routes>
             <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Landing />} />
             
