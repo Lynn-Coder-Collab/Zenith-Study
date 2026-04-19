@@ -14,7 +14,9 @@ import {
   BookOpen,
   Trophy,
   BrainCircuit,
-  FileText
+  FileText,
+  Users,
+  Search
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -158,30 +160,55 @@ export function Dashboard() {
 
           {/* Quick Access Hub */}
           <div>
-             <h2 className="text-lg font-black uppercase tracking-tight mb-4">Command Modules</h2>
-             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+             <h2 className="text-lg font-black uppercase tracking-tight mb-4 mt-6 border-b border-border/50 pb-2">System Modules</h2>
+             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 <QuickLinkCard 
-                  title="Zenith AI Mentor" 
-                  desc="Neural-linked academic guidance" 
+                  title="AI Mentor" 
+                  desc="Neural assistance" 
                   icon={BrainCircuit} 
                   path="/mentor" 
                   onClick={() => navigate('/mentor')} 
+                  color="text-primary"
                 />
                 <QuickLinkCard 
-                  title="Global Leaderboard" 
-                  desc="Community competitive ranking" 
+                  title="Quizzes" 
+                  desc="Knowledge checks" 
+                  icon={BookOpen} 
+                  path="/quizzes" 
+                  onClick={() => navigate('/quizzes')} 
+                  color="text-blue-500"
+                />
+                <QuickLinkCard 
+                  title="Study Rooms" 
+                  desc="Live sessions" 
+                  icon={Users} 
+                  path="/rooms" 
+                  onClick={() => navigate('/rooms')} 
+                  color="text-purple-500"
+                />
+                <QuickLinkCard 
+                  title="Data Archives" 
+                  desc="Saved notes" 
+                  icon={FileText} 
+                  path="/notes" 
+                  onClick={() => navigate('/notes')} 
+                  color="text-emerald-500"
+                />
+                <QuickLinkCard 
+                  title="Leaderboard" 
+                  desc="Global ranking" 
                   icon={Trophy} 
                   path="/leaderboard" 
                   onClick={() => navigate('/leaderboard')} 
                   color="text-amber-500"
                 />
                 <QuickLinkCard 
-                  title="Data Archives" 
-                  desc="Your synchronized study notes" 
-                  icon={FileText} 
-                  path="/notes" 
-                  onClick={() => navigate('/notes')} 
-                  color="text-emerald-500"
+                  title="Search Engine" 
+                  desc="Ecosystem query" 
+                  icon={Search} 
+                  path="/search" 
+                  onClick={() => navigate('/search')} 
+                  color="text-rose-500"
                 />
              </div>
           </div>
