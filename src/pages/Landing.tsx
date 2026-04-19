@@ -3,11 +3,15 @@ import { auth, googleProvider } from '../lib/firebase';
 import { signInWithPopup } from 'firebase/auth';
 import { motion } from 'motion/react';
 import { Zap, BookOpen, Users, Brain, Shield } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export function Landing() {
+  const navigate = useNavigate();
+
   const handleLogin = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
+      navigate('/dashboard');
     } catch (error) {
       console.error('Login failed:', error);
     }

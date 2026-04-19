@@ -3,14 +3,16 @@ import { useAppStore } from '../store/useAppStore';
 import { auth, googleProvider } from '../lib/firebase';
 import { signInWithPopup, signOut } from 'firebase/auth';
 import { LogOut, User, Menu, Zap } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export function Navbar() {
   const { user } = useAppStore();
+  const navigate = useNavigate();
 
   const handleLogin = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
+      navigate('/dashboard');
     } catch (error) {
       console.error('Login failed:', error);
     }
