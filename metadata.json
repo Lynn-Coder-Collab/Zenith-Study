@@ -1,0 +1,6 @@
+{
+  "name": "Study with Zenith",
+  "description": "A comprehensive, AI-powered study platform with dashboard, quiz engine, and real-time collaborative study rooms.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": []
+}

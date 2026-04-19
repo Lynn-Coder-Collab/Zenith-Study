@@ -1,0 +1,91 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and statistics",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "admin"] },
+        "stats": {
+          "type": "object",
+          "properties": {
+            "totalStudyTime": { "type": "number" },
+            "quizCount": { "type": "number" },
+            "streak": { "type": "integer" },
+            "velocity": { "type": "number" }
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "name", "email", "role"]
+    },
+    "Quiz": {
+      "title": "Quiz",
+      "description": "Educational quiz data",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "difficulty": { "type": "string", "enum": ["easy", "medium", "hard"] },
+        "questionCount": { "type": "integer" },
+        "authorId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "category", "authorId"]
+    },
+    "Question": {
+      "title": "Question",
+      "description": "A single question within a quiz",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "type": "string" },
+        "type": { "type": "string", "enum": ["multiple-choice", "true-false"] },
+        "options": { "type": "array", "items": { "type": "string" } },
+        "correctAnswer": { "type": "string" },
+        "explanation": { "type": "string" }
+      },
+      "required": ["text", "type", "correctAnswer"]
+    },
+    "StudyRoom": {
+      "title": "Study Room",
+      "description": "Real-time collaborative study session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "creatorId": { "type": "string" },
+        "participants": { "type": "array", "items": { "type": "string" } },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "creatorId"]
+    },
+    "Note": {
+      "title": "Note",
+      "description": "User-generated study notes",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "content"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": { "schema": "User", "description": "Global user profiles" },
+    "/quizzes/{quizId}": { "schema": "Quiz", "description": "Collection of available quizzes" },
+    "/quizzes/{quizId}/questions/{questionId}": { "schema": "Question", "description": "Questions linked to a quiz" },
+    "/rooms/{roomId}": { "schema": "StudyRoom", "description": "Active study rooms" },
+    "/users/{uid}/notes/{noteId}": { "schema": "Note", "description": "User-specific notes" }
+  }
+}
